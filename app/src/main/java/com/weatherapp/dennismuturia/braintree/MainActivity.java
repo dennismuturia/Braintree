@@ -127,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
                     return null;
                 }
                 Map<String, String> params = new HashMap<>();
-                for (String key: params.keySet()){
+                for (String key: paramsHash.keySet()){
                     params.put(key,paramsHash.get(key));
                 }
                 return params;
