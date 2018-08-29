@@ -12,14 +12,23 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
 import com.android.volley.toolbox.HttpResponse;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.braintreepayments.api.dropin.DropInActivity;
+import com.braintreepayments.api.dropin.DropInRequest;
 import com.braintreepayments.api.dropin.DropInResult;
 import com.braintreepayments.api.interfaces.HttpResponseCallback;
 import com.braintreepayments.api.internal.HttpClient;
 import com.braintreepayments.api.models.PaymentMethodNonce;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_CODE = 123;
@@ -44,8 +53,21 @@ public class MainActivity extends AppCompatActivity {
         btn_pay = (Button)findViewById(R.id.btn_pay);
         edt_amount = (EditText)findViewById(R.id.edt_amount);
 
+        //Event to pay
+        btn_pay.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                submitPayment();
+            }
+        });
+
         //get the method to get the token
         new getToken().execute();
+    }
+
+    private void submitPayment() {
+        DropInRequest dropInRequest = new DropInRequest().clientToken(token);
+        startActivityForResult(dropInRequest.getIntent(this), REQUEST_CODE);
     }
 
     @Override
@@ -79,6 +101,47 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void sendPayments() {
+        RequestQueue queue = Volley.newRequestQueue(MainActivity.this);
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, API_CHECK_OUT, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                if (response.toString().contains("Successful")){
+                    Toast.makeText(MainActivity.this, "Transaction Successful", Toast.LENGTH_SHORT).show();
+                }else{
+                    Toast.makeText(MainActivity.this, "Transaction Failed", Toast.LENGTH_SHORT).show();
+
+                }
+                Log.d("EDMT_LOG", response.toString());
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.d("EDMT_ERROR", error.toString());
+            }
+        })
+
+        {
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                if (paramsHash == null){
+                    return null;
+                }
+                Map<String, String> params = new HashMap<>();
+                for (String key: params.keySet()){
+                    params.put(key,paramsHash.get(key));
+                }
+                return params;
+            }
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> params = new HashMap<>();
+                params.put("Content-type", "application/x-www-form-urlencoded");
+                return params;
+            }
+        };
+        queue.add(stringRequest);
+
     }
 
     private class getToken extends AsyncTask{
