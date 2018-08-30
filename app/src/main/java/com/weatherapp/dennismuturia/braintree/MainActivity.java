@@ -32,8 +32,8 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_CODE = 123;
-    final String API_GET_TOKEN = "";
-    final String API_CHECK_OUT = "";
+    final String API_GET_TOKEN = "<YOUR LOCALHOST URL FOR THE main.php>";
+    final String API_CHECK_OUT = "<YOUR LOCALHOST URL FOR THE checkout.php>";
 
     String token, amount;
     HashMap<String, String> paramsHash;
